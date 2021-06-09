@@ -1,0 +1,25 @@
+#Clear Variables
+rm(list = ls())
+# Ctrl+Shift+F10 to totally clear global environment
+
+#Libraries
+library(Boruta)
+library(mlbench)
+library(caret)
+library(randomForest)
+
+#Data
+df <- read.table(file = "clipboard", 
+                      sep = "\t", header=TRUE)
+
+#Feature Selection
+set.seed(3)
+boruta <- Boruta(Diagnosis ~ ., data = df, doTrace=2, maxRuns = 500)
+print(boruta)
+plot(boruta, las = 2, cex.axis = 0.7, xlab = "                             Attributes")
+
+#Tentative Rough Fix
+TentativeRoughFix(boruta)
+
+#Stats
+attStats(boruta)
