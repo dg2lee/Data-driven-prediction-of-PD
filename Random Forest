@@ -1,0 +1,80 @@
+# Clear variables and workspace
+#try:
+#    from IPython import get_ipython
+#    get_ipython().magic('clear')
+#    get_ipython().magic('reset -f')
+#except:
+#    pass
+
+# Import Excel data
+import pandas as pd
+dataset = pd.read_excel(r'C:\Users\south\OneDrive\바탕 화면\MEDD419\FLEX\Pre-processing\Longitudinal Microbiome Study\FSS2_Female_Blank.xlsx')
+dataset
+
+# Split data into features and labels
+X = pd.DataFrame(dataset.iloc[:,:-1])
+y = pd.DataFrame(dataset.iloc[:,-1])
+
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state = 10)
+#X,y,test_size=0.3
+#X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=1, stratify=y)
+
+from sklearn.ensemble import RandomForestClassifier
+classifier = RandomForestClassifier(n_estimators=10000, random_state = 10)
+classifier.fit(X_train, y_train.values.ravel())
+
+y_pred = classifier.predict(X_test)
+print('Random Forest Parameters')
+print(classifier.get_params())
+print("")
+from sklearn.metrics import classification_report, confusion_matrix
+print('Classification Report')
+print(classification_report(y_test,y_pred))
+print("")
+print('Confusion Matrix')
+print(confusion_matrix(y_test, y_pred))
+print("")
+
+# Get and reshape confusion matrix data
+import numpy as np
+matrix = confusion_matrix(y_test, y_pred)
+matrix = matrix.astype('float') / matrix.sum(axis=1)[:, np.newaxis]
+
+# Build the plot
+import matplotlib.pyplot as plt
+import seaborn as sns
+plt.figure(figsize=(16,7))
+sns.set(font_scale=1.4)
+sns.heatmap(matrix, annot=True, annot_kws={'size':10},
+            cmap=plt.cm.Greens, linewidths=0.2)
+
+# Add labels to the plot
+class_names = ['No Diagnosis','Diagnosis']
+tick_marks = np.arange(len(class_names)) + 0.5
+tick_marks2 = tick_marks
+plt.xticks(tick_marks, class_names, rotation=0)
+plt.yticks(tick_marks2, class_names, rotation=0)
+plt.xlabel('Predicted label')
+plt.ylabel('True label')
+plt.title('Confusion Matrix for Random Forest Model')
+plt.show()
+import pandas as pd
+feature_imp = pd.Series(classifier.feature_importances_,index=X.columns) .sort_values(ascending=False)
+feature_imp
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+'exec(%matplotlib inline)'
+
+# Report feature importance
+print('Feature Importance')
+print(feature_imp)
+
+#Creating a bar plot
+sns.barplot(x=feature_imp, y=feature_imp.index)
+plt.xlabel('Feature Importance Score')
+plt.ylabel('Features')
+plt.title('Visualizing Importance Features')
+plt.show()
